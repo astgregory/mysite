@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1xja&)*zv8wps(-n12+tpv6pdd#%x8ii3%&0wbcltb^@uo28z6'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -41,7 +44,10 @@ INSTALLED_APPS = [
     'taggit',
     'django.contrib.sites',
     'django.contrib.sitemaps',
-    'django.contrib.postgres'
+    'django.contrib.postgres',
+    'social_django',
+    'django_summernote',
+    'django_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +74,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -139,5 +147,101 @@ LOGIN_REDIRECT_URL = "/"
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
 
-MEDIA_ROOT = BASE_DIR/'media'
+MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'social_core.backends.google.GoogleOAuth2',
+
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = str(os.getenv('SECRET_KEY'))
+
+# social auth configs for github
+SOCIAL_AUTH_GITHUB_KEY = str(os.getenv('GITHUB_KEY'))
+SOCIAL_AUTH_GITHUB_SECRET = str(os.getenv('GITHUB_SECRET'))
+
+# social auth configs for google
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = str(os.getenv('GOOGLE_KEY'))
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv('GOOGLE_SECRET'))
+
+SUMMERNOTE_CONFIG = {
+    # Использование SummernoteWidget - в iframe
+    'iframe': True,
+
+    # Или вы можете установить значение `False`, чтобы использовать SummernoteInplaceWidget - без режима iframe.
+    # В этом случае вам придется загружать источники и зависимости Bootstrap/jQuery вручную.
+    # Используйте это, когда вы уже используете темы на основе Bootstrap/jQuery.
+
+    # Пользовательские настройки Summernote
+    'summernote': {
+        # Включение Air-mode
+        # Подробнее - https://summernote.org/examples/
+        'airMode': False,
+
+        # Размеры редактора
+        'width': '100%',
+        'height': '480',
+
+        # Язык редактора
+        'lang': None,
+
+        # Кастомизация
+        # https://summernote.org/deep-dive/#custom-toolbar-popover
+        'toolbar': [
+            ['style', ['style']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['fontname', ['fontname']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'video']],
+            ['view', ['fullscreen', 'code view', 'help']],
+        ],
+
+        # Вы также можете добавить пользовательские настройки для внешних плагинов
+        'print': {
+            'stylesheetUrl': '/some_static_folder/printable.css',
+        },
+        'codemirror': {
+            'mode': 'html mixed',
+            'lineNumbers': 'true',
+            # Вы должны включить файл темы в 'css' или 'css_for_inplace' перед его использованием.
+            'theme': 'monorail',
+        },
+    },
+
+    # Требовать аутентификацию пользователей для загрузки вложений.
+    'attachment_require_authentication': True,
+
+    # Установите функцию `upload_to` для вложений.
+    # 'attachment_upload_to': my_custom_upload_to_func(),
+
+    # Установите пользовательский класс хранения для вложений.
+    # 'attachment_storage_class': 'my.custom.storage.class.name',
+
+    # Установка пользовательской модели для вложений (default: 'django_summernote.Attachment')
+    # 'attachment_model': 'my.custom.attachment.model',  # должен наследовать 'django_summernote.AbstractAttachment'
+
+    # Вы можете полностью отключить функцию вложений.
+    'disable_attachment': False,
+
+    # Установите значение `True`, чтобы возвращать пути вложений в абсолютных URI.
+    'attachment_absolute_uri': False,
+
+    # Вы можете добавить пользовательские css/js для SummernoteWidget.
+    # Обязательно поместите {{ form.media }} в шаблон перед тем, как инициировать summernote.
+    'css': (
+    ),
+    'js': (
+    ),
+
+    # Ленивая инициализация (lazy-load)
+    'lazy': True,
+
+}
+
+SUMMERNOTE_THEME = 'bs5'
